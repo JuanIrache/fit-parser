@@ -348,6 +348,11 @@ function readRecord(blob, messageTypes, developerFields, startIndex, options, st
     var fields = {};
     var message = (0, _messages.getFitMessage)(messageType.globalMessageNumber);
 
+    // dirty hack to read gears
+    var raw;
+    var gears;
+    // back to official
+
     for (var _i6 = 0; _i6 < messageType.fieldDefs.length; _i6++) {
         var _fDef2 = messageType.fieldDefs[_i6];
         var data = readData(blob, _fDef2, readDataFromIndex, options);
@@ -370,6 +375,21 @@ function readRecord(blob, messageTypes, developerFields, startIndex, options, st
 
                 if (_field !== 'unknown' && _field !== '' && _field !== undefined) {
                     fields[_field] = applyOptions(formatByType(data, _type, _scale, _offset), _field, options);
+                    
+                    // dirty hack to read gears
+                    if (field === 'data') {
+                        raw = {
+                        start: readDataFromIndex,
+                        littleEndian: fDef.littleEndian
+                        };
+                    } else if (raw && /^(front|rear)_gear_change$/.test(fields[field])) {
+                        gears = [0, 1, 2, 3].map(i =>
+                        new DataView(
+                            new Uint8Array([blob[raw.start + i]]).buffer
+                        ).getInt8(0, raw.littleEndian)
+                        );
+                    }
+                    // back to official
                 }
             }
 
@@ -382,6 +402,10 @@ function readRecord(blob, messageTypes, developerFields, startIndex, options, st
         readDataFromIndex += _fDef2.size;
         messageSize += _fDef2.size;
     }
+
+    // dirty hack to read gears
+    if (gears) fields.gears = gears;
+    // back to official
 
     if (message.name === 'field_description') {
         developerFields[fields.developer_data_index] = developerFields[fields.developer_data_index] || [];
