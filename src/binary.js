@@ -346,8 +346,8 @@ export function readRecord(
   const message = getFitMessage(messageType.globalMessageNumber);
 
   // dirty hack to read gears
-  var raw;
-  var gears;
+  let raw;
+  let gears;
   // back to official
 
   for (let i = 0; i < messageType.fieldDefs.length; i++) {
