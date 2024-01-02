@@ -377,12 +377,12 @@ function readRecord(blob, messageTypes, developerFields, startIndex, options, st
                     fields[_field] = applyOptions(formatByType(data, _type, _scale, _offset), _field, options);
                     
                     // dirty hack to read gears
-                    if (field === 'data') {
+                    if (_field === 'data') {
                         raw = {
                         start: readDataFromIndex,
-                        littleEndian: fDef.littleEndian
+                        littleEndian: _fDef2.littleEndian
                         };
-                    } else if (raw && /^(front|rear)_gear_change$/.test(fields[field])) {
+                    } else if (raw && /^(front|rear)_gear_change$/.test(fields[_field])) {
                         gears = [0, 1, 2, 3].map(i =>
                         new DataView(
                             new Uint8Array([blob[raw.start + i]]).buffer
