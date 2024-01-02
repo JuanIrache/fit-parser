@@ -345,6 +345,11 @@ export function readRecord(
   const fields = {};
   const message = getFitMessage(messageType.globalMessageNumber);
 
+  // dirty hack to read gears
+  var raw;
+  var gears;
+  // back to official
+
   for (let i = 0; i < messageType.fieldDefs.length; i++) {
     const fDef = messageType.fieldDefs[i];
     const data = readData(blob, fDef, readDataFromIndex, options);
@@ -372,6 +377,21 @@ export function readRecord(
             field,
             options
           );
+
+          // dirty hack to read gears
+          if (field === 'data') {
+            raw = {
+              start: readDataFromIndex,
+              littleEndian: fDef.littleEndian
+            };
+          } else if (raw && /^(front|rear)_gear_change$/.test(fields[field])) {
+            gears = [0, 1, 2, 3].map(i =>
+              new DataView(
+                new Uint8Array([blob[raw.start + i]]).buffer
+              ).getInt8(0, raw.littleEndian)
+            );
+          }
+          // back to official
         }
       }
 
@@ -384,6 +404,10 @@ export function readRecord(
     readDataFromIndex += fDef.size;
     messageSize += fDef.size;
   }
+
+  // dirty hack to read gears
+  if (gears) fields.gears = gears;
+  // back to official
 
   if (message.name === 'field_description') {
     developerFields[fields.developer_data_index] =
