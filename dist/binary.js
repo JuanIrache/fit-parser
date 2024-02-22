@@ -363,6 +363,7 @@ function readRecord(
 
   // dirty hack to read gears
   var raw;
+  var foundGears;
   var gears;
   // back to official
 
@@ -402,7 +403,11 @@ function readRecord(
               start: readDataFromIndex,
               littleEndian: _fDef2.littleEndian
             };
-          } else if (raw && /^(front|rear)_gear_change$/.test(fields[_field])) {
+          }
+          if (/^(front|rear)_gear_change$/.test(fields[_field])) {
+            foundGears = true;
+          }
+          if (raw && foundGears && !gears) {
             gears = [0, 1, 2, 3].map(i =>
               new DataView(
                 new Uint8Array([blob[raw.start + i]]).buffer
