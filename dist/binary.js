@@ -365,6 +365,7 @@ function readRecord(
   var raw;
   var foundGears;
   var gears;
+  var modeA;
   // back to official
 
   for (var _i6 = 0; _i6 < messageType.fieldDefs.length; _i6++) {
@@ -405,10 +406,12 @@ function readRecord(
             };
           }
           if (/^(front|rear)_gear_change$/.test(fields[_field])) {
+            if (raw) modeA = true;
             foundGears = true;
           }
           if (raw && foundGears && !gears) {
-            gears = [0, 1, 2, 3].map(i =>
+            const order = modeA ? [0, 1, 2, 3] : [3, 2, 1, 0];
+            gears = order.map(i =>
               new DataView(
                 new Uint8Array([blob[raw.start + i]]).buffer
               ).getInt8(0, raw.littleEndian)
