@@ -1,8 +1,9 @@
+Warning, I'm editing this repo for personal purposes and I'm cutting corners everywhere. Only use for investigation.
+
 # fit-file-parser
 
 > Parse your .FIT files easily, directly from JS.
 > Written in ES6. (Hope to change)
-
 
 ## Install
 
