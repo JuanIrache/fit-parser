@@ -288,14 +288,13 @@ export function readRecord(
 
     // numberOfDeveloperDataFields = 0 so it wont crash here and wont loop
     for (let i = 0; i < numberOfDeveloperDataFields; i++) {
+      const fDefIndex = startIndex + 6 + numberOfFields * 3 + 1 + i * 3;
+      const fieldNum = blob[fDefIndex];
+      const size = blob[fDefIndex + 1];
+      const devDataIndex = blob[fDefIndex + 2];
+
       // If we fail to parse then try catch
       try {
-        const fDefIndex = startIndex + 6 + numberOfFields * 3 + 1 + i * 3;
-
-        const fieldNum = blob[fDefIndex];
-        const size = blob[fDefIndex + 1];
-        const devDataIndex = blob[fDefIndex + 2];
-
         const devDef = developerFields[devDataIndex][fieldNum];
 
         const baseType = devDef.fit_base_type_id;
@@ -318,6 +317,19 @@ export function readRecord(
         mTypeDef.fieldDefs.push(fDef);
       } catch (e) {
         if (options.force) {
+          // The field description may occur later in the file. Keep an opaque
+          // definition so its bytes are still consumed from every data message.
+          mTypeDef.fieldDefs.push({
+            type: 'byte_array',
+            fDefNo: fieldNum,
+            size,
+            endianAbility: false,
+            littleEndian: lEnd,
+            name: undefined,
+            developerDataIndex: devDataIndex,
+            isDeveloperField: true,
+            ignored: true
+          });
           continue;
         }
         throw e;
@@ -355,7 +367,7 @@ export function readRecord(
     const data = readData(blob, fDef, readDataFromIndex, options);
 
     if (!isInvalidValue(data, fDef.type)) {
-      if (fDef.isDeveloperField) {
+      if (fDef.isDeveloperField && !fDef.ignored) {
         const field = fDef.name;
         const type = fDef.type;
         const scale = fDef.scale;
